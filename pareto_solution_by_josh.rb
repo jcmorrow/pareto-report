@@ -21,53 +21,53 @@ csv_text = File.read('data.csv')
 csv = CSV.parse(csv_text, :headers => true)
 year2 = 2014
 
-donors_unsorted = {}
-donors_sorted = {
-					"under100" => {},
-					"100to249" => {},
-					"250to1k" => {},
-					"1kto5k" => {},
-					"above5k" => {}
-				}
-hundreds = 0
+#we're going to build out from this object now so it is easier.
+giving_levels = {
+	"under100" => {"donor_count" => 0, "dollar_total" => 0, "percentage_total" => 0.0},
+	"100to249" => {"donor_count" => 0, "dollar_total" => 0, "percentage_total" => 0.0},
+	"250to1k" => {"donor_count" => 0, "dollar_total" => 0, "percentage_total" => 0.0},
+	"1kto5k" => {"donor_count" => 0, "dollar_total" => 0, "percentage_total" => 0.0},
+	"above5k" => {"donor_count" => 0, "dollar_total" => 0, "percentage_total" => 0.0}
+}
+donor_totals = {}
 grand_total = 0
 csv.each do |row|
 	if(Date.strptime(row['date'], '%m/%d/%y').year == 2014)
-		if donors_unsorted.has_key? row['id']
-			donors_unsorted[row['id']] += row['amount'].to_f
+		if donor_totals.has_key? row['id']
+			donor_totals[row['id']] += row['amount'].to_f
 		else
-			donors_unsorted[row['id']] = row['amount'].to_f
+			donor_totals[row['id']] = row['amount'].to_f
 		end
 		grand_total += row['amount'].to_f
 	end
 end
-donors_unsorted.each do |id, amount|
+donor_totals.each do |id, amount|
 	case amount
 	when 0.0...100.0
-			donors_sorted["under100"][id] = amount
+			giving_levels["under100"]["donor_count"] += 1;
+			giving_levels["under100"]["dollar_total"] += amount;
 	when 100.0...250.0
-			donors_sorted["100to249"][id] = amount
+			giving_levels["100to249"]["donor_count"] += 1;
+			giving_levels["100to249"]["dollar_total"] += amount;
 	when 250.0...1000.0
-			donors_sorted["250to1k"][id] = amount
+			giving_levels["250to1k"]["donor_count"] += 1;
+			giving_levels["250to1k"]["dollar_total"] += amount;
 	when 1000.0...5000.0
-			donors_sorted["1kto5k"][id] = amount
+			giving_levels["1kto5k"]["donor_count"] += 1;
+			giving_levels["1kto5k"]["dollar_total"] += amount;
 	else
-			donors_sorted["above5k"][id] = amount
+			giving_levels["above5k"]["donor_count"] += 1;
+			giving_levels["above5k"]["dollar_total"] += amount;
 	end
 end
-amount_summary = {}
-percentage_summary = {}
-donors_sorted.each do |level, donors|
-	total = 0
-	donors.each do |donor, amount|
-		total += amount
-	end
-	amount_summary[level] = total
-	percentage_summary[level] = total/grand_total
+giving_levels.each do |level, stats|
+	stats["percentage_total"] = (stats["dollar_total"]/grand_total*100).round(2)
 end
 
-puts "Total donors: #{donors_unsorted.size}"
-donors_sorted.each {|category, donors| puts "#{category} has #{donors.size} donors in it and a total of $#{amount_summary[category]} in contributions, accounting for %#{percentage_summary[category]*100} of the total gifts"}
+puts "Total donors: #{donor_totals.size}"
+giving_levels.each {|level, stats| puts "#{level} has #{stats["donor_count"]} donors in it and a total of $#{stats["dollar_total"].round(2)} in contributions, accounting for %#{stats["percentage_total"]} of the total gifts"}
 finishTime=Time.now
 puts "Total operation took #{finishTime - startTime} seconds"
-puts amount_summary
+
+
+#=============================================================
