@@ -23,14 +23,15 @@ year2 = 2014
 
 #we're going to build out from this object now so it is easier.
 giving_levels = {
-	"under100" => {"donor_count" => 0, "dollar_total" => 0, "percentage_total" => 0.0},
-	"100to249" => {"donor_count" => 0, "dollar_total" => 0, "percentage_total" => 0.0},
-	"250to1k" => {"donor_count" => 0, "dollar_total" => 0, "percentage_total" => 0.0},
-	"1kto5k" => {"donor_count" => 0, "dollar_total" => 0, "percentage_total" => 0.0},
-	"above5k" => {"donor_count" => 0, "dollar_total" => 0, "percentage_total" => 0.0}
+	"under100" => {"donor_count" => 0, "dollar_total" => 0, "percentage_total" => 0.0, "percentage_donors" => 0.0},
+	"100to249" => {"donor_count" => 0, "dollar_total" => 0, "percentage_total" => 0.0, "percentage_donors" => 0.0},
+	"250to1k" => {"donor_count" => 0, "dollar_total" => 0, "percentage_total" => 0.0, "percentage_donors" => 0.0},
+	"1kto5k" => {"donor_count" => 0, "dollar_total" => 0, "percentage_total" => 0.0, "percentage_donors" => 0.0},
+	"above5k" => {"donor_count" => 0, "dollar_total" => 0, "percentage_total" => 0.0, "percentage_donors" => 0.0}
 }
 donor_totals = {}
-grand_total = 0
+grand_total_amount = 0
+grand_donor_count = 0
 csv.each do |row|
 	if(Date.strptime(row['date'], '%m/%d/%y').year == 2014)
 		if donor_totals.has_key? row['id']
@@ -38,7 +39,8 @@ csv.each do |row|
 		else
 			donor_totals[row['id']] = row['amount'].to_f
 		end
-		grand_total += row['amount'].to_f
+		grand_total_amount += row['amount'].to_f
+		grand_donor_count += 1
 	end
 end
 donor_totals.each do |id, amount|
@@ -61,7 +63,8 @@ donor_totals.each do |id, amount|
 	end
 end
 giving_levels.each do |level, stats|
-	stats["percentage_total"] = (stats["dollar_total"]/grand_total*100).round(2)
+	stats["percentage_total"] = (stats["dollar_total"]/grand_total_amount*100).round(2)
+	stats["percentage_donors"] = (stats["donor_count"].to_f/grand_donor_count.to_f*100.0).round(2)
 end
 
 puts "Total donors: #{donor_totals.size}"
@@ -71,3 +74,16 @@ puts "Total operation took #{finishTime - startTime} seconds"
 
 
 #=============================================================
+
+# ON TO STAGE 2
+
+#=============================================================
+
+pareto_amount = giving_levels["250to1k"]["percentage_total"] + giving_levels["1kto5k"]["percentage_total"]+giving_levels["above5k"]["percentage_total"]
+pareto_donors = giving_levels["250to1k"]["percentage_donors"] + giving_levels["1kto5k"]["percentage_donors"]+giving_levels["above5k"]["percentage_donors"]
+puts "%#{pareto_amount} of gifts were given by %#{pareto_donors.round(2)} of donors"
+
+
+
+
+
