@@ -12,7 +12,7 @@
 # important caveat: This program assumes that there is a file in the same directory called data.csv
 # which has the headers "id" and "amount" and "date"
 startTime = Time.now
-require 'CSV'
+require 'csv'
 
 
 csv_text = File.read('data.csv')
